@@ -1,11 +1,15 @@
 {
-  "name": "mmm-pollengoogle",
-  "version": "1.0.0",
+  "name": "mmm-pollen",
+  "version": "1.0.1",
   "description": "MagicMirror² module for Google Pollen API with 7-day trends",
-  "main": "MMM-PollenGoogle.js",
-  "author": "Ditt Navn",
+  "main": "MMMPollen.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nmeldre/MMMPollen.git"
+  },
+  "author": "nmeldre",
   "license": "MIT",
   "dependencies": {
-    "request": "^2.88.2"
+    "axios": "^1.6.0"
   }
 }
