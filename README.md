@@ -20,7 +20,7 @@ This module visualizes pollen levels for specific plants (Birch, Alder, Hazel, a
 
 2. Clone the repository:
    
-   git clone [https://github.com/DITT_BRUKERNAVN/MMM-PollenGoogle.git](https://github.com/DITT_BRUKERNAVN/MMM-PollenGoogle.git)
+   git clone [https://github.com/nmeldre/MMMPollen.git](https://github.com/nmeldre/MMMPollen.git)
    
 
 3. Install dependencies:
