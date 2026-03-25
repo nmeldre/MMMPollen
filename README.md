@@ -33,8 +33,9 @@ This module visualizes pollen levels for specific plants (Birch, Alder, Hazel, a
 
 To use this module, you need a **Google Maps API Key** with the **Pollen API** enabled. You can get one at the [Google Cloud Console](https://console.cloud.google.com/).
 
-Add the following to your `config/config.js`:
+Add the following to your config/config.js:
 
+JavaScript
 {
     module: "MMM-PollenGoogle",
     position: "top_right",
