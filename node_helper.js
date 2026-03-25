@@ -1,5 +1,5 @@
 const NodeHelper = require("node_helper");
-const request = require("request");
+const axios = require("axios"); // Vi bytter fra request til axios
 const fs = require("fs");
 const path = require("path");
 
@@ -16,11 +16,12 @@ module.exports = NodeHelper.create({
         }
     },
 
-    updateData: function() {
+    async updateData() {
         const url = `https://pollen.googleapis.com/v1/forecast:lookup?key=${this.config.apiKey}&location.latitude=${this.config.latitude}&location.longitude=${this.config.longitude}&days=5&languageCode=${this.config.language}`;
         
-        request({ url: url, json: true }, (err, res, body) => {
-            if (err || (res && res.statusCode !== 200)) return;
+        try {
+            const response = await axios.get(url);
+            const body = response.data;
 
             let history = this.getHistory();
             const today = new Date().toISOString().split('T')[0];
@@ -39,7 +40,9 @@ module.exports = NodeHelper.create({
                 fs.writeFileSync(this.historyPath, JSON.stringify(newHistory));
                 this.sendSocketNotification("DATA_UPDATE", { forecast: body.dailyInfo, history: newHistory });
             }
-        });
+        } catch (error) {
+            console.error("MMM-PollenGoogle: Feil ved henting av data", error.message);
+        }
     },
 
     getHistory: function() {
