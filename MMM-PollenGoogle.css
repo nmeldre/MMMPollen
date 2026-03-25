@@ -1,0 +1,7 @@
+.pollen-wrapper { text-align: left; max-width: 400px; }
+.pollen-table { border-collapse: separate; border-spacing: 0 5px; width: 100%; }
+.pollen-name { font-weight: 400; color: #eee; padding-right: 15px !important; white-space: nowrap; }
+.pollen-graph-cell { padding: 0 10px !important; vertical-align: middle; }
+.day-val { min-width: 25px; font-size: 18px; }
+.recommendation-text { margin-top: 15px; padding: 10px; border-top: 1px solid #333; line-height: 1.4; font-style: italic; color: #bbb; }
+svg circle[stroke="white"] { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); }
