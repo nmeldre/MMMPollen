@@ -11,7 +11,7 @@ Module.register("MMMPollen", {
         chartHeight: 30,
         plants: ["BIRCH", "ALDER", "HAZEL", "GRAMINALES", "MUGWORT"], 
         plantNames: {
-            "BIRCH": "BjÃ¸rk",
+            "BIRCH": "Bj\u00f8rk",
             "ALDER": "Or",
             "HAZEL": "Hassel",
             "GRAMINALES": "Gress",
@@ -34,7 +34,7 @@ Module.register("MMMPollen", {
 },
 
     getCategoryText: function(val) {
-        const categories = ["Ingen", "Veldig lav", "Lav", "Moderat", "HÃ¸y", "Veldig hÃ¸y"];
+        const categories = ["Ingen", "Veldig lav", "Lav", "Moderat", "H\u00f8y", "Veldig h\u00f8y"];
         return categories[Math.min(val, 5)] || "Ingen";
     },
 
@@ -115,7 +115,7 @@ combineData: function(code) {
         }
 
         // SJEKKEN: Kun hvis planten er "inSeason" bruker vi Googles verdi.
-        // Hvis ikke (som for BjÃ¸rk nÃ¥), tvinger vi den til 0.
+        // Hvis ikke (som for Bjørk nå), tvinger vi den til 0.
         if (plant && plant.inSeason && plant.indexInfo) {
             points.push({ 
                 value: plant.indexInfo.value || 0, 
@@ -136,7 +136,7 @@ createSparkline: function(points) {
     svg.style.verticalAlign = "middle";
     svg.style.overflow = "visible";
 
-    // Funksjon for Ã¥ lage en myk kurve mellom punkter
+    // Funksjon for å lage en myk kurve mellom punkter
     const solve = (data) => {
         if (data.length < 2) return "";
         let d = `M ${data[0].x},${data[0].y}`;
