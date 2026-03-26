@@ -51,29 +51,31 @@ Module.register("MMMPollen", {
         var table = document.createElement("table");
         table.className = "small pollen-table";
 
-        this.config.plants.forEach(code => {
+     this.config.plants.forEach(code => {
             const points = this.combineData(code);
             if (!points.some(p => p.value > 0)) return;
 
             var row = table.insertRow(-1);
             
+            // 1. Plantenavn (Venstre)
             var nameCell = row.insertCell(-1);
             nameCell.innerHTML = this.config.plantNames[code] || code;
             nameCell.className = "pollen-name align-left";
 
-            if (this.config.showHistory) {
-                var graphCell = row.insertCell(-1);
-                graphCell.className = "pollen-graph-cell";
-                graphCell.appendChild(this.createSparkline(points));
-            }
-
+            // 2. Varselstekst (Nå i midten)
             var todayVal = points[3].value;
             var valCell = row.insertCell(-1);
-            // Endret fra tall til tekst-kategori
             valCell.innerHTML = this.getCategoryText(todayVal);
-            valCell.className = "align-right bold day-category";
+            valCell.className = "align-left bold day-category"; // Endret til align-left for flyt
             if (todayVal > 0 && points[3].color) {
                 valCell.style.color = this.getRGB(points[3].color);
+            }
+
+            // 3. Graf (Nå til høyre)
+            if (this.config.showHistory) {
+                var graphCell = row.insertCell(-1);
+                graphCell.className = "pollen-graph-cell align-right";
+                graphCell.appendChild(this.createSparkline(points));
             }
         });
 
