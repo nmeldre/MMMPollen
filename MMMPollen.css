@@ -1,13 +1,57 @@
-.pollen-wrapper { text-align: left; max-width: 400px; }
-.pollen-table { border-collapse: separate; border-spacing: 0 5px; width: 100%; }
-.pollen-name { font-weight: 400; color: #eee; padding-right: 15px !important; white-space: nowrap; }
-.pollen-graph-cell { padding: 0 10px !important; vertical-align: middle; min-width: 130px;}
-.day-val { min-width: 25px; font-size: 18px; }
-.recommendation-text { margin-top: 15px; padding: 10px; border-top: 1px solid #333; line-height: 1.4; font-style: italic; color: #bbb; }
-svg circle[stroke="white"] { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); }
+.pollen-wrapper { 
+    text-align: left; 
+    max-width: 400px; 
+}
+
+.pollen-table { 
+    border-collapse: separate; 
+    border-spacing: 0 5px; 
+    width: 100%; 
+}
+
+/* Plantenavn - Nå satt til 14px */
+.pollen-name { 
+    font-size: 14px;
+    font-weight: 400; 
+    color: #eee; 
+    padding-right: 15px !important; 
+    white-space: nowrap; 
+}
+
+.pollen-graph-cell { 
+    padding: 0 10px !important; 
+    vertical-align: middle; 
+    min-width: 130px;
+}
+
+/* Tekstkategorien (Veldig lav, Moderat osv.) - Nå satt til 12px */
+.day-category { 
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* Helserådene nederst - Nå satt til 11px og mer diskré */
+.recommendation-text { 
+    font-size: 11px;
+    margin-top: 15px; 
+    padding: 10px; 
+    border-top: 1px solid #333; 
+    line-height: 1.4; 
+    font-style: italic; 
+    color: #bbb; 
+    max-width: 300px;
+}
+
+svg circle[stroke="white"] { 
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); 
+}
+
 /* Skjul header-feltet for denne modulen uansett hva */
 .MMMPollen header {
-    display: none;
+    display: none !important;
 }
 
 /* Fjerner margen som ofte blir liggende igjen */
