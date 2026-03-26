@@ -4,7 +4,7 @@ Module.register("MMMPollen", {
         latitude: 59.91,
         longitude: 10.75,
         language: "nb",
-        updateInterval: 60 * 60 * 1000, 
+        updateInterval: 60 * 60 * 1000 *3, 
         showHealthRecommendation: true,
         showHistory: true,              
         chartWidth: 120,
