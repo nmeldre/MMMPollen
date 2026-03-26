@@ -1,72 +1,71 @@
-/* Hovedcontainer for modulen */
+/* Hovedcontainer - Redusert max-width for å holde modulen smal */
 .pollen-wrapper { 
     text-align: left; 
-    max-width: 480px; 
+    max-width: 320px; 
 }
 
 /* Tabelloppsett */
 .pollen-table { 
     border-collapse: separate; 
-    border-spacing: 0 6px; /* Gir litt luft mellom radene */
+    border-spacing: 0 4px; /* Litt tightere mellom radene */
     width: auto;
 }
 
-/* 1. Plantenavn (Venstre kolonne) */
+/* 1. Plantenavn - Smalere bredde for å dytte statusen nærmere */
 .pollen-name { 
     font-size: 14px;
     font-weight: 400; 
     color: #eee; 
-    width: 65px; /* Fast bredde sørger for at statusen starter på samme linje */
+    width: 60px; /* Redusert fra 65px */
     display: inline-block;
     white-space: nowrap;
     text-align: left;
-    padding-right: 5px !important;
+    padding-right: 2px !important;
 }
 
-/* 2. Varselstekst (Midtre kolonne - VELDIG LAV osv.) */
+/* 2. Varselstekst - Kuttet ned på min-width og padding */
 .day-category { 
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     color: #bbb;
     text-align: left;
-    padding-left: 5px; 
-    padding-right: 10px !important; /* God avstand bort til grafen */
+    padding-left: 2px; 
+    padding-right: 8px !important; /* Halvert mellomrommet til grafen */
     white-space: nowrap;
-    min-width: 90px; /* Sikrer at "VELDIG LAV" har plass uten å dytte grafen */
+    min-width: 75px; /* Gjort smalere for å dra grafen inn */
 }
 
-/* 3. Grafen (Høyre kolonne) */
+/* 3. Grafen - Justert for å ligge tett inntil teksten */
 .pollen-graph-cell { 
     padding: 0 !important; 
     vertical-align: middle; 
     text-align: left;
-    width: 125px;
+    width: 120px;
 }
 
-/* Helserådene nederst */
+/* Helserådene nederst - Gjort smalere for å matche resten */
 .recommendation-text { 
     font-size: 11px;
-    margin-top: 15px; 
-    padding: 10px; 
+    margin-top: 12px; 
+    padding: 8px 0; 
     border-top: 1px solid #333; 
-    line-height: 1.4; 
+    line-height: 1.3; 
     font-style: italic; 
     color: #999; 
-    max-width: 350px;
+    max-width: 280px;
 }
 
-/* Glød-effekt på dagens punkt i grafen */
+/* Glød-effekt på dagens punkt */
 svg circle[stroke="white"] { 
     filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); 
 }
 
-/* Skjul standard MagicMirror header for denne modulen */
+/* Skjul header og fiks margin */
 .MMMPollen header {
     display: none !important;
 }
 
-/* Fjern topp-margin for en tightere look */
 .MMMPollen {
     margin-top: 0;
 }
