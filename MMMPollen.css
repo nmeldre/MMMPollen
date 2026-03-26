@@ -7,7 +7,7 @@
 /* Tabelloppsett */
 .pollen-table { 
     border-collapse: separate; 
-    border-spacing: 10px; /* Gir litt luft mellom radene */
+    border-spacing: 0 6px; /* Gir litt luft mellom radene */
     width: auto;
 }
 
