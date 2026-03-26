@@ -1,39 +1,50 @@
+/* Hovedcontainer for modulen */
 .pollen-wrapper { 
     text-align: left; 
-    max-width: 400px; 
+    max-width: 480px; 
 }
 
+/* Tabelloppsett */
 .pollen-table { 
     border-collapse: separate; 
-    border-spacing: 0 5px; 
-    width: 100%; 
+    border-spacing: 0 6px; /* Gir litt luft mellom radene */
+    width: auto;
 }
 
-/* Plantenavn - Nå satt til 14px */
+/* 1. Plantenavn (Venstre kolonne) */
 .pollen-name { 
     font-size: 14px;
     font-weight: 400; 
     color: #eee; 
-    padding-right: 15px !important; 
-    white-space: nowrap; 
+    width: 85px; /* Fast bredde sørger for at statusen starter på samme linje */
+    display: inline-block;
+    white-space: nowrap;
+    text-align: left;
+    padding-right: 5px !important;
 }
 
-.pollen-graph-cell { 
-    padding: 0 10px !important; 
-    vertical-align: middle; 
-    min-width: 130px;
-}
-
-/* Tekstkategorien (Veldig lav, Moderat osv.) - Nå satt til 12px */
+/* 2. Varselstekst (Midtre kolonne - VELDIG LAV osv.) */
 .day-category { 
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    min-width: 80px;
-    text-align: right;
+    color: #bbb;
+    text-align: left;
+    padding-left: 5px; 
+    padding-right: 25px !important; /* God avstand bort til grafen */
+    white-space: nowrap;
+    min-width: 90px; /* Sikrer at "VELDIG LAV" har plass uten å dytte grafen */
 }
 
-/* Helserådene nederst - Nå satt til 11px og mer diskré */
+/* 3. Grafen (Høyre kolonne) */
+.pollen-graph-cell { 
+    padding: 0 !important; 
+    vertical-align: middle; 
+    text-align: right;
+    width: 125px;
+}
+
+/* Helserådene nederst */
 .recommendation-text { 
     font-size: 11px;
     margin-top: 15px; 
@@ -41,20 +52,21 @@
     border-top: 1px solid #333; 
     line-height: 1.4; 
     font-style: italic; 
-    color: #bbb; 
-    max-width: 300px;
+    color: #999; 
+    max-width: 350px;
 }
 
+/* Glød-effekt på dagens punkt i grafen */
 svg circle[stroke="white"] { 
     filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); 
 }
 
-/* Skjul header-feltet for denne modulen uansett hva */
+/* Skjul standard MagicMirror header for denne modulen */
 .MMMPollen header {
     display: none !important;
 }
 
-/* Fjerner margen som ofte blir liggende igjen */
+/* Fjern topp-margin for en tightere look */
 .MMMPollen {
     margin-top: 0;
 }
