@@ -7,7 +7,7 @@
 /* Tabelloppsett */
 .pollen-table { 
     border-collapse: separate; 
-    border-spacing: 0 6px; /* Gir litt luft mellom radene */
+    border-spacing: 10px; /* Gir litt luft mellom radene */
     width: auto;
 }
 
@@ -16,7 +16,7 @@
     font-size: 14px;
     font-weight: 400; 
     color: #eee; 
-    width: 85px; /* Fast bredde sørger for at statusen starter på samme linje */
+    width: 65px; /* Fast bredde sørger for at statusen starter på samme linje */
     display: inline-block;
     white-space: nowrap;
     text-align: left;
