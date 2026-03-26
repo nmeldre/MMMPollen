@@ -25,7 +25,7 @@
 
 /* 2. Varselstekst (Midtre kolonne - VELDIG LAV osv.) */
 .day-category { 
-    font-size: 11px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #bbb;
@@ -40,7 +40,7 @@
 .pollen-graph-cell { 
     padding: 0 !important; 
     vertical-align: middle; 
-    text-align: right;
+    text-align: left;
     width: 125px;
 }
 
