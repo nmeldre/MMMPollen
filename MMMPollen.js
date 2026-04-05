@@ -216,9 +216,13 @@ Module.register("MMMPollen", {
         return `rgb(${Math.round((c.red || 0)*255)}, ${Math.round((c.green || 0)*255)}, ${Math.round((c.blue || 0)*255)})`;
     },
 
-    socketNotificationReceived: function(notification, payload) {
+ socketNotificationReceived: function(notification, payload) {
         if (notification === "DATA_UPDATE") {
+            // Vi lagrer payload.forecast i BÅDE this.pollenData (for helseråd) 
+            // og i this.forecast (for grafen/combineData)
             this.pollenData = payload.forecast;
+            this.forecast = payload.forecast; 
+            
             this.history = payload.history;
             this.loaded = true;
             this.updateDom(this.config.animationSpeed);
