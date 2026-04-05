@@ -4,26 +4,27 @@
     max-width: 320px; 
 }
 
-/* Tabelloppsett */
+/* 1. Tabelloppsett - Økt spacing fra 4px til 10px for å gi plass til dato-teksten */
 .pollen-table { 
     border-collapse: separate; 
-    border-spacing: 0 4px; /* Litt tightere mellom radene */
+    border-spacing: 0 10px; 
     width: auto;
 }
 
-/* 1. Plantenavn - Smalere bredde for å dytte statusen nærmere */
+/* 2. Plantenavn - Beholder din stil, men sikrer vertikal midtstilling */
 .pollen-name { 
     font-size: 14px;
     font-weight: 400; 
     color: #eee; 
-    width: 60px; /* Redusert fra 65px */
-    display: inline-block;
+    width: 60px;
+    display: table-cell; /* Endret fra inline-block for bedre tabell-kontroll */
     white-space: nowrap;
     text-align: left;
-    padding-right: 2px !important;
+    padding-right: 5px !important;
+    vertical-align: middle;
 }
 
-/* 2. Varselstekst - Kuttet ned på min-width og padding */
+/* 3. Varselstekst */
 .day-category { 
     font-size: 12px;
     text-transform: uppercase;
@@ -31,32 +32,27 @@
     color: #bbb;
     text-align: left;
     padding-left: 2px; 
-    padding-right: 8px !important; /* Halvert mellomrommet til grafen */
+    padding-right: 10px !important;
     white-space: nowrap;
-    min-width: 75px; /* Gjort smalere for å dra grafen inn */
+    min-width: 80px;
+    vertical-align: middle;
 }
 
-/* 3. Grafen - Justert for å ligge tett inntil teksten */
+/* 4. Grafen - Økt bredde til 130px så datoen helt til høyre ikke blir kuttet */
 .pollen-graph-cell { 
     padding: 0 !important; 
     vertical-align: middle; 
     text-align: left;
-    width: 120px;
+    width: 130px; 
 }
 
-/* Helserådene nederst - Gjort smalere for å matche resten */
-.recommendation-text { 
-    font-size: 11px;
-    margin-top: 12px; 
-    padding: 8px 0; 
-    border-top: 1px solid #333; 
-    line-height: 1.3; 
-    font-style: italic; 
-    color: #999; 
-    max-width: 280px;
+/* Styling av selve teksten inne i SVG-grafen */
+svg text {
+    font-family: "Roboto Condensed", Arial, sans-serif;
+    text-transform: lowercase; /* Gjør "i dag" diskret */
 }
 
-/* Glød-effekt på dagens punkt */
+/* Din eksisterende glød-effekt og andre stiler beholdes under her... */
 svg circle[stroke="white"] { 
     filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5)); 
 }
