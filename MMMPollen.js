@@ -63,7 +63,8 @@ Module.register("MMMPollen", {
             nameCell.className = "pollen-name align-left";
 
             // 2. Varselstekst (Nå i midten)
-            var todayVal = points[3].value;
+            const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
+            var todayVal = todayPoint.value;
             var valCell = row.insertCell(-1);
             valCell.innerHTML = this.getCategoryText(todayVal);
             valCell.className = "align-left bold day-category"; // Endret til align-left for flyt
