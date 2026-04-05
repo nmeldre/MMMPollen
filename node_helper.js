@@ -46,7 +46,8 @@ module.exports = NodeHelper.create({
                         history[dateStr] = day.plantInfo.map(p => ({
                             code: p.code,
                             value: p.indexInfo ? p.indexInfo.value : 0,
-                            color: p.indexInfo ? p.indexInfo.color : null
+                            color: p.indexInfo ? p.indexInfo.color : null,
+                            inSeason: p.inSeason
                         }));
                     }
                 });
