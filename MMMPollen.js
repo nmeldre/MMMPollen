@@ -53,7 +53,15 @@ Module.register("MMMPollen", {
 
      this.config.plants.forEach(code => {
             const points = this.combineData(code);
-            if (!points.some(p => p.value > 0)) return;
+            // Finn punktet for "i dag" i dataene
+            const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
+
+            // SKJUL HVIS: 
+            // 1. Google sier den er ute av sesong (inSeason === false)
+            // 2. ELLER hvis verdien er 0 (ingen pollen)
+            if (todayPoint.inSeason === false || todayPoint.value === 0) {
+            return;
+            }
 
             var row = table.insertRow(-1);
             
@@ -107,6 +115,7 @@ Module.register("MMMPollen", {
                         date: date,
                         value: dayData.value,
                         color: dayData.color,
+                        inSeason: dayData.inSeason,
                         isToday: date === todayStr
                     });
                 }
@@ -125,6 +134,7 @@ Module.register("MMMPollen", {
                             date: dateStr,
                             value: dayData.indexInfo ? dayData.indexInfo.value : 0,
                             color: dayData.indexInfo ? dayData.indexInfo.color : null,
+                            inSeason: dayData.inSeason,
                             isToday: false
                         });
                     }
