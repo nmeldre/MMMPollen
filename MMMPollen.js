@@ -4,7 +4,7 @@ Module.register("MMMPollen", {
         latitude: 59.91,
         longitude: 10.75,
         language: "nb",
-        updateInterval: 60 * 60 * 1000 *3, 
+        updateInterval: 60 * 60 * 1000 * 3, 
         showHealthRecommendation: true,
         showHistory: true,              
         chartWidth: 120,
@@ -24,14 +24,11 @@ Module.register("MMMPollen", {
 
     start: function() {
         this.pollenData = null;
+        this.forecast = null;
         this.history = null;
         this.loaded = false;
         this.sendSocketNotification("CONFIG", this.config);
     },
-
-    getHeader: function() { 
-    return null;
-},
 
     getCategoryText: function(val) {
         const categories = ["Ingen", "Veldig lav", "Lav", "Moderat", "H\u00f8y", "Veldig h\u00f8y"];
@@ -51,36 +48,36 @@ Module.register("MMMPollen", {
         var table = document.createElement("table");
         table.className = "small pollen-table";
 
-     this.config.plants.forEach(code => {
+        this.config.plants.forEach(code => {
             const points = this.combineData(code);
-            // Finn punktet for "i dag" i dataene
+            if (points.length === 0) return;
+
+            // Finn punktet for "i dag"
             const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
 
-            // SKJUL HVIS: 
-            // 1. Google sier den er ute av sesong (inSeason === false)
-            // 2. ELLER hvis verdien er 0 (ingen pollen)
+            // DØRVAKT: Skjul hvis ikke i sesong ELLER hvis verdi er 0
             if (todayPoint.inSeason === false || todayPoint.value === 0) {
-            return;
+                return;
             }
 
             var row = table.insertRow(-1);
             
-            // 1. Plantenavn (Venstre)
+            // 1. Plantenavn
             var nameCell = row.insertCell(-1);
             nameCell.innerHTML = this.config.plantNames[code] || code;
             nameCell.className = "pollen-name align-left";
 
-            // 2. Varselstekst (Nå i midten)
-            const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
+            // 2. Varselstekst (I dag)
             var todayVal = todayPoint.value;
             var valCell = row.insertCell(-1);
             valCell.innerHTML = this.getCategoryText(todayVal);
-            valCell.className = "align-left bold day-category"; // Endret til align-left for flyt
-            if (todayVal > 0 && points[3].color) {
-                valCell.style.color = this.getRGB(points[3].color);
+            valCell.className = "align-left bold day-category";
+            
+            if (todayVal > 0 && todayPoint.color) {
+                valCell.style.color = this.getRGB(todayPoint.color);
             }
 
-            // 3. Graf (Nå til høyre)
+            // 3. Graf
             if (this.config.showHistory) {
                 var graphCell = row.insertCell(-1);
                 graphCell.className = "pollen-graph-cell align-right";
@@ -101,12 +98,10 @@ Module.register("MMMPollen", {
         return wrapper;
     },
 
-// Denne funksjonen syr sammen fortid og fremtid til én linje
     combineData: function(code) {
         const todayStr = moment().format("YYYY-MM-DD");
         let combined = [];
 
-        // 1. Legg til historikk (de siste 5 dagene fra fil)
         if (this.history) {
             Object.keys(this.history).sort().forEach(date => {
                 const dayData = this.history[date].find(p => p.code === code);
@@ -122,8 +117,6 @@ Module.register("MMMPollen", {
             });
         }
 
-        // 2. Legg til forecast (fremtiden fra Google)
-        // Vi hopper over "i dag" fra forecasten hvis den allerede finnes i historikken
         if (this.forecast) {
             this.forecast.forEach(day => {
                 const dateStr = this.formatGoogleDate(day.date);
@@ -141,10 +134,9 @@ Module.register("MMMPollen", {
                 }
             });
         }
-        return combined.slice(-7); // Vi viser totalt 7 dager på grafen
+        return combined.slice(-7);
     },
 
-    // Hjelpefunksjon for å lese Googles dato-format
     formatGoogleDate: function(dateObj) {
         return `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}`;
     },
@@ -152,10 +144,9 @@ Module.register("MMMPollen", {
     createSparkline: function(points) {
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
-        
         const width = 120;
         const height = 45; 
-        const margin = 12; // Gir plass til datoene på sidene
+        const margin = 12;
         const graphHeight = 18; 
         const textSpace = 15;   
         
@@ -169,7 +160,6 @@ Module.register("MMMPollen", {
             const x = margin + i * step;
             const y = height - margin - (p.value / maxVal) * graphHeight;
 
-            // --- DATO-TEKST (Start, i dag, Slutt) ---
             let labelText = "";
             if (i === 0) {
                 labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
@@ -191,12 +181,11 @@ Module.register("MMMPollen", {
                 svg.appendChild(label);
             }
 
-            // --- PRIKKER ---
             const circle = document.createElementNS(svgNS, "circle");
             circle.setAttribute("cx", x);
             circle.setAttribute("cy", y);
             circle.setAttribute("r", p.isToday ? "3.5" : "1.5");
-            circle.setAttribute("fill", p.value > 0 ? this.getRGB(p.color, p.isToday ? 1 : 0.4) : (p.isToday ? "#fff" : "#444"));
+            circle.setAttribute("fill", p.value > 0 ? this.getRGB(p.color) : (p.isToday ? "#fff" : "#444"));
             if (p.isToday) {
                 circle.setAttribute("stroke", "#fff");
                 circle.setAttribute("stroke-width", "1");
@@ -204,7 +193,6 @@ Module.register("MMMPollen", {
             svg.appendChild(circle);
         });
 
-        // --- LINJE ---
         let pathData = points.map((p, i) => {
             const x = margin + i * step;
             const y = height - margin - (p.value / maxVal) * graphHeight;
@@ -221,19 +209,15 @@ Module.register("MMMPollen", {
         return svg;
     },
 
-
     getRGB: function(c) {
         if (!c || (c.red === undefined && c.green === undefined)) return "#333";
         return `rgb(${Math.round((c.red || 0)*255)}, ${Math.round((c.green || 0)*255)}, ${Math.round((c.blue || 0)*255)})`;
     },
 
- socketNotificationReceived: function(notification, payload) {
+    socketNotificationReceived: function(notification, payload) {
         if (notification === "DATA_UPDATE") {
-            // Vi lagrer payload.forecast i BÅDE this.pollenData (for helseråd) 
-            // og i this.forecast (for grafen/combineData)
             this.pollenData = payload.forecast;
             this.forecast = payload.forecast; 
-            
             this.history = payload.history;
             this.loaded = true;
             this.updateDom(this.config.animationSpeed);
