@@ -92,98 +92,123 @@ Module.register("MMMPollen", {
         return wrapper;
     },
 
-combineData: function(code) {
-    let points = [];
-    
-    // 1. HISTORIKK (3 dager tilbake) - Beholder faktiske verdier fra filen din
-    for (let i = 3; i > 0; i--) {
-        let d = new Date();
-        d.setDate(d.getDate() - i);
-        let ds = d.toISOString().split('T')[0];
-        let h = (this.history && this.history[ds]) ? this.history[ds].find(p => p.code === code) : null;
-        
-        points.push({ 
-            value: h ? h.value : 0, 
-            color: h ? h.color : null 
-        });
-    }
+// Denne funksjonen syr sammen fortid og fremtid til én linje
+    combineData: function(code) {
+        const todayStr = moment().format("YYYY-MM-DD");
+        let combined = [];
 
-    // 2. PROGNOSE (Idag + 3 frem) - Sjekker inSeason for alle typer
-    for (let i = 0; i < 4; i++) {
-        let dayData = (this.pollenData && this.pollenData[i]) ? this.pollenData[i] : null;
-        let plant = null;
-        if (dayData && dayData.plantInfo) {
-            plant = dayData.plantInfo.find(p => p.code === code);
-        }
-
-        // SJEKKEN: Kun hvis planten er "inSeason" bruker vi Googles verdi.
-        // Hvis ikke (som for Bjørk nå), tvinger vi den til 0.
-        if (plant && plant.inSeason && plant.indexInfo) {
-            points.push({ 
-                value: plant.indexInfo.value || 0, 
-                color: plant.indexInfo.color || null 
+        // 1. Legg til historikk (de siste 5 dagene fra fil)
+        if (this.history) {
+            Object.keys(this.history).sort().forEach(date => {
+                const dayData = this.history[date].find(p => p.code === code);
+                if (dayData) {
+                    combined.push({
+                        date: date,
+                        value: dayData.value,
+                        color: dayData.color,
+                        isToday: date === todayStr
+                    });
+                }
             });
-        } else {
-            // Dette punktet blir nÃ¥ en grÃ¥ prikk pÃ¥ bunnlinjen for alt som er "out of season"
-            points.push({ value: 0, color: null });
         }
-    }
-    return points;
-},
-    
-createSparkline: function(points) {
-    const w = this.config.chartWidth, h = this.config.chartHeight, max = 5;
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", w); svg.setAttribute("height", h);
-    svg.style.verticalAlign = "middle";
-    svg.style.overflow = "visible";
 
-    // Funksjon for å lage en myk kurve mellom punkter
-    const solve = (data) => {
-        if (data.length < 2) return "";
-        let d = `M ${data[0].x},${data[0].y}`;
-        for (let i = 0; i < data.length - 1; i++) {
-            const cp1x = data[i].x + (data[i + 1].x - data[i].x) / 2;
-            d += ` C ${cp1x},${data[i].y} ${cp1x},${data[i+1].y} ${data[i+1].x},${data[i+1].y}`;
+        // 2. Legg til forecast (fremtiden fra Google)
+        // Vi hopper over "i dag" fra forecasten hvis den allerede finnes i historikken
+        if (this.forecast) {
+            this.forecast.forEach(day => {
+                const dateStr = this.formatGoogleDate(day.date);
+                if (dateStr > todayStr) {
+                    const dayData = day.plantInfo.find(p => p.code === code);
+                    if (dayData) {
+                        combined.push({
+                            date: dateStr,
+                            value: dayData.indexInfo ? dayData.indexInfo.value : 0,
+                            color: dayData.indexInfo ? dayData.indexInfo.color : null,
+                            isToday: false
+                        });
+                    }
+                }
+            });
         }
-        return d;
-    };
+        return combined.slice(-7); // Vi viser totalt 7 dager på grafen
+    },
 
-    // Lag koordinatene for punktene
-    const coords = points.map((p, i) => ({
-        x: (i / (points.length - 1)) * w,
-        y: h - (p.value / max * (h - 6)) - 3
-    }));
+    // Hjelpefunksjon for å lese Googles dato-format
+    formatGoogleDate: function(dateObj) {
+        return `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}`;
+    },
 
-    // 1. Tegn den myke linjen
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", solve(coords));
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "rgba(255, 255, 255, 0.4)");
-    path.setAttribute("stroke-width", "1.5");
-    path.setAttribute("stroke-linecap", "round");
-    svg.appendChild(path);
-
-    // 2. Tegn prikkene oppÃ¥ (IDAG-prikken fÃ¥r ring)
-    coords.forEach((c, i) => {
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", c.x); 
-        circle.setAttribute("cy", c.y);
+    createSparkline: function(points) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
         
-        if (i === 3) { // IDAG
-            circle.setAttribute("r", "4");
-            circle.setAttribute("stroke", "white");
-            circle.setAttribute("stroke-width", "1");
-        } else { 
-            circle.setAttribute("r", "2.5"); 
-        }
+        const width = 120;
+        const height = 45; 
+        const margin = 12; // Gir plass til datoene på sidene
+        const graphHeight = 18; 
+        const textSpace = 15;   
         
-        circle.setAttribute("fill", this.getRGB(points[i].color));
-        svg.appendChild(circle);
-    });
+        svg.setAttribute("width", width);
+        svg.setAttribute("height", height);
 
-    return svg;
-},
+        const maxVal = 5;
+        const step = (width - margin * 2) / (points.length - 1);
+
+        points.forEach((p, i) => {
+            const x = margin + i * step;
+            const y = height - margin - (p.value / maxVal) * graphHeight;
+
+            // --- DATO-TEKST (Start, i dag, Slutt) ---
+            let labelText = "";
+            if (i === 0) {
+                labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+            } else if (p.isToday) {
+                labelText = "i dag";
+            } else if (i === points.length - 1) {
+                labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+            }
+
+            if (labelText !== "") {
+                const label = document.createElementNS(svgNS, "text");
+                label.setAttribute("x", x);
+                label.setAttribute("y", textSpace - 2);
+                label.setAttribute("text-anchor", i === 0 ? "start" : (i === points.length - 1 ? "end" : "middle"));
+                label.setAttribute("font-size", "9px");
+                label.setAttribute("font-weight", p.isToday ? "bold" : "normal");
+                label.setAttribute("fill", p.isToday ? "#fff" : "#777");
+                label.textContent = labelText;
+                svg.appendChild(label);
+            }
+
+            // --- PRIKKER ---
+            const circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", p.isToday ? "3.5" : "1.5");
+            circle.setAttribute("fill", p.value > 0 ? this.getRGB(p.color, p.isToday ? 1 : 0.4) : (p.isToday ? "#fff" : "#444"));
+            if (p.isToday) {
+                circle.setAttribute("stroke", "#fff");
+                circle.setAttribute("stroke-width", "1");
+            }
+            svg.appendChild(circle);
+        });
+
+        // --- LINJE ---
+        let pathData = points.map((p, i) => {
+            const x = margin + i * step;
+            const y = height - margin - (p.value / maxVal) * graphHeight;
+            return (i === 0 ? "M" : "L") + x + "," + y;
+        }).join(" ");
+
+        const path = document.createElementNS(svgNS, "path");
+        path.setAttribute("d", pathData);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#333");
+        path.setAttribute("stroke-width", "1");
+        svg.insertBefore(path, svg.firstChild);
+
+        return svg;
+    },
 
 
     getRGB: function(c) {
