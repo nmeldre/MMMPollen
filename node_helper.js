@@ -57,7 +57,8 @@ module.exports = NodeHelper.create({
                 let newHistory = {};
                 keptKeys.forEach(k => newHistory[k] = history[k]);
                 
-                fs.writeFileSync(this.historyPath, JSON.stringify(newHistory));
+                // Tallet 4 betyr at den bruker 4 mellomrom som innrykk (tab)
+                fs.writeFileSync(this.historyPath, JSON.stringify(newHistory, null, 4));
 
                 // Send både ferske varsler og den vaskede historikken til modulen
                 this.sendSocketNotification("DATA_UPDATE", { 
