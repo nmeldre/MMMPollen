@@ -57,9 +57,11 @@ Module.register("MMMPollen", {
             const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
 
             // DØRVAKT: Skjul hvis ikke i sesong ELLER hvis verdi er 0
-            if (todayPoint.inSeason === false || todayPoint.value === 0) {
-                return;
-            }
+          const shouldHideRecord = todayPoint.value === 0 || (this.config.hideOffSeason && todayPoint.inSeason === false);
+
+    if (shouldHideRecord) {
+        return;
+    }
 
             var row = table.insertRow(-1);
             
