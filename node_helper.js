@@ -22,6 +22,8 @@ module.exports = NodeHelper.create({
     },
 
     async updateData() {
+        if (!this.config || !this.config.apiKey) return;
+
         const url = `https://pollen.googleapis.com/v1/forecast:lookup?key=${this.config.apiKey}&location.latitude=${this.config.latitude}&location.longitude=${this.config.longitude}&days=5&languageCode=${this.config.language}`;
         
         try {
@@ -57,18 +59,16 @@ module.exports = NodeHelper.create({
                 });
             }
         } catch (error) {
-            console.error("MMM-Pollen: Feil ved henting", error.message);
+            console.error("MMM-Pollen: Feil ved henting av data:", error.message);
         }
     },
 
     getHistory: function() {
         if (fs.existsSync(this.historyPath)) {
-            try { return JSON.parse(fs.readFileSync(this.historyPath, "utf8")); }
-            catch (e) { return {}; }
-        }
-        return {};
-    }
-});                return {}; 
+            try { 
+                return JSON.parse(fs.readFileSync(this.historyPath, "utf8")); 
+            } catch (e) { 
+                return {}; 
             }
         }
         return {};
