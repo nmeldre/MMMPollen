@@ -12,18 +12,13 @@ module.exports = NodeHelper.create({
         if (notification === "CONFIG") {
             this.config = payload;
             this.updateData();
-            // Sørger for at vi ikke lager hundrevis av intervaller hvis modulen restarter
             if (this.interval) clearInterval(this.interval);
             this.interval = setInterval(() => this.updateData(), this.config.updateInterval);
         }
     },
 
-    // Hjelpefunksjon for å konvertere Googles dato-objekt til YYYY-MM-DD
     formatGoogleDate: function(dateObj) {
-        const y = dateObj.year;
-        const m = String(dateObj.month).padStart(2, '0');
-        const d = String(dateObj.day).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        return `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}`;
     },
 
     async updateData() {
@@ -35,13 +30,10 @@ module.exports = NodeHelper.create({
 
             if (body.dailyInfo) {
                 let history = this.getHistory();
-                
-                // Gå gjennom alle dagene Google sendte (vanligvis 5 dager)
+                const todayStr = new Date().toISOString().split('T')[0];
+
                 body.dailyInfo.forEach(day => {
                     const dateStr = this.formatGoogleDate(day.date);
-                    const todayStr = new Date().toISOString().split('T')[0];
-
-                    // Vi lagrer kun data i historikk-filen hvis datoen er i dag eller i fortiden
                     if (dateStr <= todayStr) {
                         history[dateStr] = day.plantInfo.map(p => ({
                             code: p.code,
@@ -52,32 +44,31 @@ module.exports = NodeHelper.create({
                     }
                 });
 
-                // Rydd i historikken: Behold kun de siste 14 dagene så fila ikke vokser evig
                 const keys = Object.keys(history).sort();
                 const keptKeys = keys.slice(-14);
                 let newHistory = {};
                 keptKeys.forEach(k => newHistory[k] = history[k]);
-                
-                // Tallet 4 betyr at den bruker 4 mellomrom som innrykk (tab)
+
                 fs.writeFileSync(this.historyPath, JSON.stringify(newHistory, null, 4));
 
-                // Send både ferske varsler og den vaskede historikken til modulen
                 this.sendSocketNotification("DATA_UPDATE", { 
                     forecast: body.dailyInfo, 
                     history: newHistory 
                 });
             }
         } catch (error) {
-            console.error("MMM-PollenGoogle: Feil ved henting av data", error.message);
+            console.error("MMM-Pollen: Feil ved henting", error.message);
         }
     },
 
     getHistory: function() {
         if (fs.existsSync(this.historyPath)) {
-            try { 
-                return JSON.parse(fs.readFileSync(this.historyPath, "utf8")); 
-            } catch (e) { 
-                return {}; 
+            try { return JSON.parse(fs.readFileSync(this.historyPath, "utf8")); }
+            catch (e) { return {}; }
+        }
+        return {};
+    }
+});                return {}; 
             }
         }
         return {};
