@@ -7,6 +7,9 @@ Module.register("MMMPollen", {
         updateInterval: 60 * 60 * 1000 * 3, 
         showHealthRecommendation: true,
         showHistory: true,
+        showGraphLabels: true,      // NY: true/false for å vise datoer/idag på grafen
+        chartHeight: 50,            // ØKT: fra 30 til 50 for mer rom til vandring
+        rowHeight: "thin",          // NY: "thin" eller "normal" for avstand mellom rader
         hideOffSeason: true,
         chartWidth: 120,
         chartHeight: 30,
@@ -147,43 +150,56 @@ Module.register("MMMPollen", {
     createSparkline: function(points) {
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
-        const width = 120;
-        const height = 45; 
-        const margin = 12;
-        const graphHeight = 18; 
-        const textSpace = 15;   
+        
+        // Henter verdier fra config
+        const width = this.config.chartWidth || 120;
+        const height = this.config.chartHeight || 50; // Bruker ny høyde (f.eks. 50)
+        
+        // Dynamisk margin: Mindre margin hvis datoer er skrudd av
+        const showLabels = this.config.showGraphLabels;
+        const marginX = 12; 
+        const marginTop = showLabels ? 15 : 5;
+        const marginBottom = 5;
+        
+        // Tilgjengelig høyde for selve graf-linjen
+        const graphAreaHeight = height - marginTop - marginBottom;
         
         svg.setAttribute("width", width);
         svg.setAttribute("height", height);
 
         const maxVal = 5;
-        const step = (width - margin * 2) / (points.length - 1);
+        const step = (width - marginX * 2) / (points.length - 1);
 
         points.forEach((p, i) => {
-            const x = margin + i * step;
-            const y = height - margin - (p.value / maxVal) * graphHeight;
+            const x = marginX + i * step;
+            // Beregner y-posisjon slik at den utnytter plassen mellom marginene
+            const y = height - marginBottom - (p.value / maxVal) * graphAreaHeight;
 
-            let labelText = "";
-            if (i === 0) {
-                labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
-            } else if (p.isToday) {
-                labelText = "i dag";
-            } else if (i === points.length - 1) {
-                labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+            // --- DATO-TEKST (Vises kun hvis showGraphLabels er true) ---
+            if (showLabels) {
+                let labelText = "";
+                if (i === 0) {
+                    labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+                } else if (p.isToday) {
+                    labelText = "i dag";
+                } else if (i === points.length - 1) {
+                    labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+                }
+
+                if (labelText !== "") {
+                    const label = document.createElementNS(svgNS, "text");
+                    label.setAttribute("x", x);
+                    label.setAttribute("y", marginTop - 3);
+                    label.setAttribute("text-anchor", i === 0 ? "start" : (i === points.length - 1 ? "end" : "middle"));
+                    label.setAttribute("font-size", "9px");
+                    label.setAttribute("font-weight", p.isToday ? "bold" : "normal");
+                    label.setAttribute("fill", p.isToday ? "#fff" : "#777");
+                    label.textContent = labelText;
+                    svg.appendChild(label);
+                }
             }
 
-            if (labelText !== "") {
-                const label = document.createElementNS(svgNS, "text");
-                label.setAttribute("x", x);
-                label.setAttribute("y", textSpace - 2);
-                label.setAttribute("text-anchor", i === 0 ? "start" : (i === points.length - 1 ? "end" : "middle"));
-                label.setAttribute("font-size", "9px");
-                label.setAttribute("font-weight", p.isToday ? "bold" : "normal");
-                label.setAttribute("fill", p.isToday ? "#fff" : "#777");
-                label.textContent = labelText;
-                svg.appendChild(label);
-            }
-
+            // --- PRIKKER ---
             const circle = document.createElementNS(svgNS, "circle");
             circle.setAttribute("cx", x);
             circle.setAttribute("cy", y);
@@ -196,9 +212,10 @@ Module.register("MMMPollen", {
             svg.appendChild(circle);
         });
 
+        // --- LINJE ---
         let pathData = points.map((p, i) => {
-            const x = margin + i * step;
-            const y = height - margin - (p.value / maxVal) * graphHeight;
+            const x = marginX + i * step;
+            const y = height - marginBottom - (p.value / maxVal) * graphAreaHeight;
             return (i === 0 ? "M" : "L") + x + "," + y;
         }).join(" ");
 
@@ -207,10 +224,7 @@ Module.register("MMMPollen", {
         path.setAttribute("fill", "none");
         path.setAttribute("stroke", "#333");
         path.setAttribute("stroke-width", "1");
-        svg.insertBefore(path, svg.firstChild);
-
-        return svg;
-    },
+        svg.insertBefore(path,
 
     getRGB: function(c) {
         if (!c || (c.red === undefined && c.green === undefined)) return "#333";
