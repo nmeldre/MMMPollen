@@ -8,9 +8,8 @@ Module.register("MMMPollen", {
         showHealthRecommendation: true,
         showHistory: true,
         showGraphLabels: true,
-        chartHeight: 50, // Bruker 50 som standard for bedre vandring
+        chartHeight: 55, 
         chartWidth: 120,
-        rowHeight: "thin",
         hideOffSeason: true,
         plants: ["BIRCH", "ALDER", "HAZEL", "GRAMINALES", "MUGWORT"], 
         plantNames: {
@@ -56,12 +55,9 @@ Module.register("MMMPollen", {
             if (points.length === 0) return;
 
             const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
-
             const shouldHideRecord = todayPoint.value === 0 || (this.config.hideOffSeason && todayPoint.inSeason === false);
 
-            if (shouldHideRecord) {
-                return;
-            }
+            if (shouldHideRecord) return;
 
             var row = table.insertRow(-1);
             
@@ -78,6 +74,157 @@ Module.register("MMMPollen", {
                 valCell.style.color = this.getRGB(todayPoint.color);
             }
 
+            if (this.config.showHistory) {
+                var graphCell = row.insertCell(-1);
+                graphCell.className = "pollen-graph-cell align-right";
+                graphCell.appendChild(this.createSparkline(points));
+            }
+        });
+
+        wrapper.appendChild(table);
+
+        if (this.config.showHealthRecommendation && this.pollenData && this.pollenData[0].healthRecommendations) {
+            var recommendation = document.createElement("div");
+            recommendation.className = "xsmall dimmed light recommendation-text";
+            recommendation.style.marginTop = "10px";
+            recommendation.innerHTML = this.pollenData[0].healthRecommendations[0];
+            wrapper.appendChild(recommendation);
+        }
+
+        return wrapper;
+    },
+
+    combineData: function(code) {
+        const todayStr = moment().format("YYYY-MM-DD");
+        let combined = [];
+
+        if (this.history) {
+            Object.keys(this.history).sort().forEach(date => {
+                const dayData = this.history[date].find(p => p.code === code);
+                if (dayData) {
+                    combined.push({
+                        date: date,
+                        value: dayData.value,
+                        color: dayData.color,
+                        inSeason: dayData.inSeason,
+                        isToday: date === todayStr
+                    });
+                }
+            });
+        }
+
+        if (this.forecast) {
+            // .slice(0, 4) sørger for i dag + maks 3 dager frem
+            this.forecast.slice(0, 4).forEach(day => {
+                const dateStr = this.formatGoogleDate(day.date);
+                if (dateStr > todayStr) {
+                    const dayData = day.plantInfo.find(p => p.code === code);
+                    if (dayData) {
+                        combined.push({
+                            date: dateStr,
+                            value: dayData.indexInfo ? dayData.indexInfo.value : 0,
+                            color: dayData.indexInfo ? dayData.indexInfo.color : null,
+                            inSeason: dayData.inSeason,
+                            isToday: false
+                        });
+                    }
+                }
+            });
+        }
+        return combined.slice(-8); // Viser ca en uke totalt
+    },
+
+    formatGoogleDate: function(dateObj) {
+        return `${dateObj.year}-${String(dateObj.month).padStart(2, '0')}-${String(dateObj.day).padStart(2, '0')}`;
+    },
+
+    createSparkline: function(points) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        const width = this.config.chartWidth || 120;
+        const height = this.config.chartHeight || 55; 
+        const showLabels = this.config.showGraphLabels;
+        const marginX = 12; 
+        const marginTop = showLabels ? 15 : 5;
+        const marginBottom = 5;
+        const graphAreaHeight = height - marginTop - marginBottom;
+        
+        svg.setAttribute("width", width);
+        svg.setAttribute("height", height);
+
+        const maxVal = 5;
+        const step = (width - marginX * 2) / (points.length - 1);
+
+        points.forEach((p, i) => {
+            const x = marginX + i * step;
+            const y = height - marginBottom - (p.value / maxVal) * graphAreaHeight;
+
+            if (showLabels) {
+                let labelText = "";
+                if (i === 0) {
+                    labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+                } else if (p.isToday) {
+                    labelText = "i dag";
+                } else if (i === points.length - 1) {
+                    labelText = p.date.split("-")[2] + "." + p.date.split("-")[1];
+                }
+
+                if (labelText !== "") {
+                    const label = document.createElementNS(svgNS, "text");
+                    label.setAttribute("x", x);
+                    label.setAttribute("y", marginTop - 3);
+                    label.setAttribute("text-anchor", i === 0 ? "start" : (i === points.length - 1 ? "end" : "middle"));
+                    label.setAttribute("font-size", "9px");
+                    label.setAttribute("font-weight", p.isToday ? "bold" : "normal");
+                    label.setAttribute("fill", p.isToday ? "#fff" : "#777");
+                    label.textContent = labelText;
+                    svg.appendChild(label);
+                }
+            }
+
+            const circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", p.isToday ? "3.5" : "1.5");
+            circle.setAttribute("fill", p.value > 0 ? this.getRGB(p.color) : (p.isToday ? "#fff" : "#444"));
+            if (p.isToday) {
+                circle.setAttribute("stroke", "#fff");
+                circle.setAttribute("stroke-width", "1");
+            }
+            svg.appendChild(circle);
+        });
+
+        let pathData = points.map((p, i) => {
+            const x = marginX + i * step;
+            const y = height - marginBottom - (p.value / maxVal) * graphAreaHeight;
+            return (i === 0 ? "M" : "L") + x + "," + y;
+        }).join(" ");
+
+        const path = document.createElementNS(svgNS, "path");
+        path.setAttribute("d", pathData);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "#333");
+        path.setAttribute("stroke-width", "1");
+        svg.insertBefore(path, svg.firstChild);
+
+        return svg;
+    },
+
+    getRGB: function(c) {
+        if (!c || (c.red === undefined && c.green === undefined)) return "#333";
+        return `rgb(${Math.round((c.red || 0)*255)}, ${Math.round((c.green || 0)*255)}, ${Math.round((c.blue || 0)*255)})`;
+    },
+
+    socketNotificationReceived: function(notification, payload) {
+        if (notification === "DATA_UPDATE") {
+            this.pollenData = payload.forecast;
+            this.forecast = payload.forecast; 
+            this.history = payload.history;
+            this.loaded = true;
+            this.updateDom(this.config.animationSpeed);
+        }
+    }
+});
             if (this.config.showHistory) {
                 var graphCell = row.insertCell(-1);
                 graphCell.className = "pollen-graph-cell align-right";
