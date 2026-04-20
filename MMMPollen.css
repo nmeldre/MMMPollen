@@ -10,74 +10,25 @@
 .pollen-name {
     color: #fff;
     font-weight: 400;
+    text-align: left;
 }
 
 .day-category {
     min-width: 80px;
+    text-align: left;
 }
 
 .pollen-graph-cell {
     padding-left: 10px;
+    text-align: right;
 }
 
 .recommendation-text {
     border-top: 1px solid #333;
-    padding-top: 5px;
-}                graphCell.appendChild(this.createSparkline(points));
-            }
-        });
-
-        wrapper.appendChild(table);
-
-        if (this.config.showHealthRecommendation && this.pollenData && this.pollenData[0].healthRecommendations) {
-            var recommendation = document.createElement("div");
-            recommendation.className = "xsmall dimmed light recommendation-text";
-            recommendation.style.marginTop = "10px";
-            recommendation.innerHTML = this.pollenData[0].healthRecommendations[0];
-            wrapper.appendChild(recommendation);
-        }
-
-        return wrapper;
-    },
-
-    combineData: function(code) {
-        const todayStr = moment().format("YYYY-MM-DD");
-        let combined = [];
-
-        if (this.history) {
-            Object.keys(this.history).sort().forEach(date => {
-                const dayData = this.history[date].find(p => p.code === code);
-                if (dayData) {
-                    combined.push({
-                        date: date,
-                        value: dayData.value,
-                        color: dayData.color,
-                        inSeason: dayData.inSeason,
-                        isToday: date === todayStr
-                    });
-                }
-            });
-        }
-
-        if (this.forecast) {
-            // .slice(0, 4) sørger for i dag + maks 3 dager frem
-            this.forecast.slice(0, 4).forEach(day => {
-                const dateStr = this.formatGoogleDate(day.date);
-                if (dateStr > todayStr) {
-                    const dayData = day.plantInfo.find(p => p.code === code);
-                    if (dayData) {
-                        combined.push({
-                            date: dateStr,
-                            value: dayData.indexInfo ? dayData.indexInfo.value : 0,
-                            color: dayData.indexInfo ? dayData.indexInfo.color : null,
-                            inSeason: dayData.inSeason,
-                            isToday: false
-                        });
-                    }
-                }
-            });
-        }
-        return combined.slice(-8); // Viser ca en uke totalt
+    padding-top: 8px;
+    margin-top: 8px;
+    line-height: 1.2;
+}        return combined.slice(-8); // Viser ca en uke totalt
     },
 
     formatGoogleDate: function(dateObj) {
