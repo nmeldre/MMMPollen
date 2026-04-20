@@ -1,83 +1,29 @@
-Module.register("MMMPollen", {
-    defaults: {
-        apiKey: "",
-        latitude: 59.91,
-        longitude: 10.75,
-        language: "nb",
-        updateInterval: 60 * 60 * 1000 * 3, 
-        showHealthRecommendation: true,
-        showHistory: true,
-        showGraphLabels: true,
-        chartHeight: 55, 
-        chartWidth: 120,
-        hideOffSeason: true,
-        plants: ["BIRCH", "ALDER", "HAZEL", "GRAMINALES", "MUGWORT"], 
-        plantNames: {
-            "BIRCH": "Bjørk",
-            "ALDER": "Or",
-            "HAZEL": "Hassel",
-            "GRAMINALES": "Gress",
-            "MUGWORT": "Burot"
-        },
-        animationSpeed: 1000,
-    },
+.pollen-wrapper {
+    padding: 5px;
+}
 
-    getStyles: function() { return ["MMMPollen.css"]; },
+.pollen-table {
+    border-collapse: separate;
+    border-spacing: 10px 2px;
+}
 
-    start: function() {
-        this.pollenData = null;
-        this.forecast = null;
-        this.history = null;
-        this.loaded = false;
-        this.sendSocketNotification("CONFIG", this.config);
-    },
+.pollen-name {
+    color: #fff;
+    font-weight: 400;
+}
 
-    getCategoryText: function(val) {
-        const categories = ["Ingen", "Veldig lav", "Lav", "Moderat", "Høy", "Veldig høy"];
-        return categories[Math.min(val, 5)] || "Ingen";
-    },
+.day-category {
+    min-width: 80px;
+}
 
-    getDom: function() {
-        var wrapper = document.createElement("div");
-        wrapper.className = "pollen-wrapper";
+.pollen-graph-cell {
+    padding-left: 10px;
+}
 
-        if (!this.loaded) {
-            wrapper.innerHTML = "Laster pollen-data...";
-            wrapper.className = "dimmed light small";
-            return wrapper;
-        }
-
-        var table = document.createElement("table");
-        table.className = "small pollen-table";
-
-        this.config.plants.forEach(code => {
-            const points = this.combineData(code);
-            if (points.length === 0) return;
-
-            const todayPoint = points.find(p => p.isToday) || points[points.length - 1];
-            const shouldHideRecord = todayPoint.value === 0 || (this.config.hideOffSeason && todayPoint.inSeason === false);
-
-            if (shouldHideRecord) return;
-
-            var row = table.insertRow(-1);
-            
-            var nameCell = row.insertCell(-1);
-            nameCell.innerHTML = this.config.plantNames[code] || code;
-            nameCell.className = "pollen-name align-left";
-
-            var todayVal = todayPoint.value;
-            var valCell = row.insertCell(-1);
-            valCell.innerHTML = this.getCategoryText(todayVal);
-            valCell.className = "align-left bold day-category";
-            
-            if (todayVal > 0 && todayPoint.color) {
-                valCell.style.color = this.getRGB(todayPoint.color);
-            }
-
-            if (this.config.showHistory) {
-                var graphCell = row.insertCell(-1);
-                graphCell.className = "pollen-graph-cell align-right";
-                graphCell.appendChild(this.createSparkline(points));
+.recommendation-text {
+    border-top: 1px solid #333;
+    padding-top: 5px;
+}                graphCell.appendChild(this.createSparkline(points));
             }
         });
 
